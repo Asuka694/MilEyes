@@ -26,6 +26,7 @@ export default function Avatar() {
         signerOrProvider: provider,
     });
 
+    /*
     useEffect(() => {
         (async () => {
             const events = await contract?.queryFilter("newNumber", 17082530);
@@ -86,7 +87,6 @@ export default function Avatar() {
             <div>
                 <table className="table mt-7 w-full">
                     <caption className="mb-5 text-lg font-bold">
-                        Create NFT
                     </caption>
                     <tbody className="h-96 overflow-y-auto">
                         {previousUsers.map(({ number, sender }, index) => {
