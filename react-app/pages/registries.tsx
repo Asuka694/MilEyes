@@ -142,15 +142,15 @@ export default function Registries() {
           <li key={index} className="relative">
             <div className="group aspect-h-10 aspect-w-10 block w-full overflow-hidden bg-gray-100 focus-within:ring-2 focus-within:ring-forest focus-within:ring-offset-2 focus-within:ring-offset-gray-100">
             <Link href={`/single/?product=${CID[index]}&id=${index}`}>
-                <Image src={`${filesList[index].image}?w=1000&q=75`}
-                  alt={filesList[index].product_name}
-                  className="pointer-events-none object-cover group-hover:opacity-75"
-                  width={1000}
-                  height={1000}
-                />
+            <Image src={`${filesList[index].image}?w=1000&q=10`}
+              alt={filesList[index].articlename}
+              className="pointer-events-none object-cover group-hover:opacity-75"
+              width={100}
+              height={100}
+            />
             </Link>
             </div>
-            <p className="pointer-events-none mt-2 block truncate text-sm font-medium text-gray-900">{filesList[index].product_name}</p>
+            <p className="pointer-events-none mt-2 block truncate text-sm font-medium text-gray-900">{filesList[index].articlename}</p>
           </li>
         ))}
       </ul>

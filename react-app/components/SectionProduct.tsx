@@ -164,7 +164,7 @@ const SectionProduct: React.FC = () => {
         </div>
         <div className="container mx-auto mt-10 flex flex-col lg:flex-row">
           <div className="w-full lg:w-1/3 lg:mr-8 px-8 pt-5 md:pt-0 md:px-0 self-start">
-            <img src={productItem.image} className="w-full h-auto lg:max-w-sm" alt={productItem.name} />
+            <img src={productItem.image} className="w-100 h-50 lg:max-w-sm" alt={productItem.name} />
           </div>
           <div className="w-full lg:w-2/3">
             <h1 className="text-2xl">Registry creator: </h1> <p>{productOwner}</p>
