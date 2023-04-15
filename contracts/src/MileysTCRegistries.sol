@@ -19,7 +19,7 @@ contract MileysTCRegistries {
     }
 
     struct Item {
-        uint256 challengeExpiration;
+        uint96 challengeExpiration;
         address requester;
         string data;
     }
@@ -43,6 +43,7 @@ contract MileysTCRegistries {
     address public token;
 
     uint256 public constant PROPOSAL_COST = 1 ether;
+    uint256 public constant ITEM_COST = 0.1 ether;
     uint256 public constant CHALLENGE_COST = 0.1 ether;
     uint256 public constant VOTE_COST = 0.1 ether;
 
@@ -65,7 +66,7 @@ contract MileysTCRegistries {
         address challenger,
         bytes32 indexed proposalId,
         bytes32 indexed itemId,
-        bytes32 indexed data
+        string indexed data
     );
 
     /*//////////////////////////////////////////////////////////////
@@ -77,8 +78,13 @@ contract MileysTCRegistries {
     error ChallengeDoesNotExist();
     error ChallengeAlreadyExists();
     error ChallengerCanNotBeItemRequester();
+    error LengthMismatch();
     
-    error ItemApproved();  
+    error ItemChallengeExpired();
+    error ItemAlreadyExist();
+    error ItemDoesNotExist();
+
+    error LengthExceeded();
 
     error NotAuthorized();
     /*//////////////////////////////////////////////////////////////
@@ -101,6 +107,9 @@ contract MileysTCRegistries {
     /*//////////////////////////////////////////////////////////////
                              PROPOSAL LOGIC
     //////////////////////////////////////////////////////////////*/
+    /// @notice Add a new proposal to the registries list
+    /// @dev The caller has to deposit the proposal cost
+    /// @param data The CID of the proposal dataset
     function propose(string memory data) external { 
         bytes32 proposalId = keccak256(abi.encode(data));
         if (existingProposal(proposalId)) revert ProposalAlreadyExists();
@@ -119,12 +128,28 @@ contract MileysTCRegistries {
         emit ProposalSubmitted(proposalId, msg.sender, data);
     }
 
-    function addItem(bytes32 proposalId, string calldata data) external {
+    /*//////////////////////////////////////////////////////////////
+                               ITEM LOGIC
+    //////////////////////////////////////////////////////////////*/
+    /// @param proposalId keccak256(abi.encode(proposalCID))
+    /// @param datas The CIDs of the items datasets
+    function addItems(bytes32 proposalId, string[] calldata datas) external {
+        if (datas.length > 10) revert LengthExceeded();
+        for (uint256 i = 0; i < datas.length; i++) {
+            _addItem(proposalId, datas[i]);
+        }
+
+        require(IERC20(token).transferFrom(msg.sender, address(this), ITEM_COST));
+    }
+
+    function _addItem(bytes32 proposalId, string calldata data) internal {
         if (proposals[proposalId].exists != 1) revert ProposalDoesNotExist();
 
         bytes32 itemId = keccak256(abi.encodePacked(proposalId, data));
+        if (existingItem(itemId)) revert ItemAlreadyExist();
+
         items[itemId] = Item({
-            challengeExpiration: block.timestamp + challengeDuration,
+            challengeExpiration: uint96(block.timestamp + challengeDuration),
             requester: msg.sender,
             data: data
         });
@@ -135,9 +160,19 @@ contract MileysTCRegistries {
     /*//////////////////////////////////////////////////////////////
                             CHALLENGE LOGIC
     //////////////////////////////////////////////////////////////*/
+    /// @param itemIds keccak256(abi.encodePacked(proposalId, itemCID));
+    function challengeItems(bytes32[] calldata itemIds, string[] calldata data) external {
+        if (itemIds.length > 10) revert LengthExceeded();
+        if (itemIds.length != data.length) revert LengthMismatch();
+        for (uint256 i = 0; i < itemIds.length; i++) {
+            _challengeItem(itemIds[i], data[i]);
+        }
+    }
+
     /// @notice Challenge an existing item
-    function challengeItem(bytes32 itemId, string calldata data) external payable {
-        if (block.timestamp > items[itemId].challengeExpiration) revert ItemApproved();
+    function _challengeItem(bytes32 itemId, string calldata data) internal {
+        if (block.timestamp > items[itemId].challengeExpiration) revert ItemChallengeExpired();
+        if (existingItem(itemId) == false) revert ItemDoesNotExist();
 
         if (items[itemId].requester == msg.sender) revert ChallengerCanNotBeItemRequester();
 
@@ -153,6 +188,8 @@ contract MileysTCRegistries {
         });
 
         require(IERC20(token).transferFrom(msg.sender, address(this), CHALLENGE_COST));
+
+        emit ItemChallenged(msg.sender, itemId, challengeId, data);
     }
 
     function resolveChallenge(bytes32 challengeId) external authorizedUsers(challengeId) {
@@ -161,6 +198,10 @@ contract MileysTCRegistries {
 
     function existingProposal(bytes32 proposalId) public view returns (bool) {
         return(proposals[proposalId].exists == 1);
+    }
+
+    function existingItem(bytes32 itemId) public view returns (bool) {
+        return(items[itemId].requester != address(0));
     }
 
     function existingChallenge(bytes32 challengeId) public view returns (bool) {
