@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
@@ -6,10 +6,12 @@ import "test/utils/Utilities.sol";
 
 import "src/mock/mockERC20.sol";
 import "src/MileysTCRegistries.sol";
+import "src/MileysTCRVoting.sol";
 
 contract RegistryTest is Test {
     mockERC20 internal token;
     MileysTCRegistries internal registry;
+    MileysTCRVoting internal voting;
 
     Utilities internal utilities;
     address[] internal users;
@@ -20,7 +22,8 @@ contract RegistryTest is Test {
         users = utilities.createUsers(10);
 
         token = new mockERC20();
-        registry = new MileysTCRegistries(address(token));
+        voting = new MileysTCRVoting(address(token), utilities.predictContractAddress(address(this), 1));
+        registry = new MileysTCRegistries(address(token), address(voting));
     }
 
     function _addProposal() public {
@@ -188,7 +191,7 @@ contract RegistryTest is Test {
         registry.challengeItems(itemsIds, challengeDataId);
     }
 
-    function testChallenge_ShouldRevert_IfAlreadyExists() public {
+    function testChallenge_ShouldRevert_IfItemHasPendingChallenge() public {
         _addProposal();
         _mintAndApproveToken(users[1], registry.ITEM_COST());
 
@@ -210,7 +213,30 @@ contract RegistryTest is Test {
 
         _mintAndApproveToken(users[2], registry.CHALLENGE_COST());
         vm.prank(users[2]);
-        vm.expectRevert(MileysTCRegistries.ChallengeAlreadyExists.selector);
+        vm.expectRevert(MileysTCRegistries.ItemHasPendingChallenge.selector);
+        registry.challengeItems(itemsIds, challengeDataId);
+    }
+
+    function testChallenge_ShouldRevert_IfItemChallengeExpired() public {
+        _addProposal();
+        _mintAndApproveToken(users[1], registry.ITEM_COST());
+
+        string[] memory itemDataIds = new string[](1);
+        bytes32 proposalId = keccak256(abi.encode("QmZ5Y2JjZmM1"));
+        itemDataIds[0] = "QmZ5Y2JjZmMDZIJ29";
+        _addItems(users[1], proposalId, itemDataIds);
+        
+        bytes32 itemId = keccak256(abi.encodePacked(proposalId, itemDataIds[0]));
+
+        bytes32[] memory itemsIds = new bytes32[](1);
+        string[] memory challengeDataId = new string[](1);
+        itemsIds[0] = itemId;
+        challengeDataId[0] = "QmZ5Y2JjZmdezaiocjezaoij8382";
+
+        _mintAndApproveToken(users[2], registry.CHALLENGE_COST());
+        vm.prank(users[2]);
+        vm.warp(block.timestamp + 31 days);
+        vm.expectRevert(MileysTCRegistries.ItemChallengeExpired.selector);
         registry.challengeItems(itemsIds, challengeDataId);
     }
 }

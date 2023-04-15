@@ -3,12 +3,10 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import { MileysTCRVoting } from "./MileysTCRVoting.sol";
+
 contract MileysTCRegistries {
     enum Status { Pending, Approved, Rejected }
-
-    enum Party { Proposer, Challenger }
-
-    enum DisputeStatus { Pending, Resolved }
 
     /// @param requester The address of the user who made the request.
     struct Proposal {
@@ -16,12 +14,15 @@ contract MileysTCRegistries {
         uint88 totalDeposit;
         uint8 exists;
         string data;
+        bytes32[] itemsId;
     }
 
     struct Item {
-        uint96 challengeExpiration;
+        uint88 challengeExpiration;
+        uint8 pendingChallenge;
         address requester;
         string data;
+        bytes32[] challengesId;
     }
 
     struct Challenge {
@@ -32,15 +33,11 @@ contract MileysTCRegistries {
         string data;
     }
 
-    struct Vote {
-        uint256 totalProposer;
-        uint256 totalChallenger;
-    }
-
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
     address public token;
+    MileysTCRVoting public voting;
 
     uint256 public constant PROPOSAL_COST = 1 ether;
     uint256 public constant ITEM_COST = 0.1 ether;
@@ -54,8 +51,10 @@ contract MileysTCRegistries {
     mapping(bytes32 => Challenge) public challenges;
     
     mapping(bytes32 => Item) public items;
-    mapping(bytes32 => Vote) public votes;
 
+    bytes32[] public proposalsId;
+    bytes32[] public itemsId;
+    bytes32[] public challengesId;
 
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
@@ -77,6 +76,8 @@ contract MileysTCRegistries {
     
     error ChallengeDoesNotExist();
     error ChallengeAlreadyExists();
+    error ItemHasPendingChallenge();
+
     error ChallengerIsItemRequester();
     error LengthMismatch();
     
@@ -84,14 +85,16 @@ contract MileysTCRegistries {
     error ItemAlreadyExist();
     error ItemDoesNotExist();
 
+
     error LengthExceeded();
 
     error NotAuthorized();
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
-    constructor(address _tokenAddress) {
+    constructor(address _tokenAddress, address _voting) {
         token = _tokenAddress;
+        voting = MileysTCRVoting(_voting);
     }
 
     /// @dev Checks if the caller is the challenger or the item requester, reverts if not
@@ -116,14 +119,14 @@ contract MileysTCRegistries {
 
         uint256 cost = PROPOSAL_COST;
 
-        proposals[proposalId] = Proposal({
-            requester: msg.sender,
-            totalDeposit: uint88(cost),
-            exists: 1,
-            data: data
-        });
+        Proposal storage proposal = proposals[proposalId];
+        proposal.requester = msg.sender;
+        proposal.totalDeposit = uint88(cost);
+        proposal.exists = 1;
+        proposal.data = data;
 
         IERC20(token).transferFrom(msg.sender, address(this), cost);
+        proposalsId.push(proposalId);
 
         emit ProposalSubmitted(proposalId, msg.sender, data);
     }
@@ -148,11 +151,14 @@ contract MileysTCRegistries {
         bytes32 itemId = keccak256(abi.encodePacked(proposalId, data));
         if (existingItem(itemId)) revert ItemAlreadyExist();
 
-        items[itemId] = Item({
-            challengeExpiration: uint96(block.timestamp + challengeDuration),
-            requester: msg.sender,
-            data: data
-        });
+        Item storage item = items[itemId];
+        item.challengeExpiration = uint88(block.timestamp + challengeDuration);
+        item.pendingChallenge = 0;
+        item.requester = msg.sender;
+        item.data = data;
+
+        proposals[proposalId].itemsId.push(itemId);
+        itemsId.push(itemId);
 
         emit ItemAdded(proposalId, itemId, data);
     }
@@ -173,22 +179,27 @@ contract MileysTCRegistries {
     function _challengeItem(bytes32 itemId, string calldata data) internal {
         if (existingItem(itemId) == false) revert ItemDoesNotExist();
         if (block.timestamp > items[itemId].challengeExpiration) revert ItemChallengeExpired();
-
+        if (items[itemId].pendingChallenge == 1) revert ItemHasPendingChallenge();
         if (items[itemId].requester == msg.sender) revert ChallengerIsItemRequester();
 
         bytes32 challengeId = keccak256(abi.encodePacked(itemId, data));
         if (existingChallenge(challengeId)) revert ChallengeAlreadyExists();
 
-        challenges[challengeId] = Challenge({
-            challenger: msg.sender,
-            exists: 1,
-            itemId: itemId,
-            status: Status.Pending,
-            data: data
-        });
+        Challenge storage challenge = challenges[challengeId];
+        challenge.challenger = msg.sender;
+        challenge.exists = 1;
+        challenge.itemId = itemId;
+        challenge.status = Status.Pending;
+        challenge.data = data;
 
+        items[itemId].pendingChallenge = 1;
+        items[itemId].challengesId.push(challengeId);
+        
+        voting.startPoll(challengeId);
         require(IERC20(token).transferFrom(msg.sender, address(this), CHALLENGE_COST));
 
+        challengesId.push(challengeId);
+        
         emit ItemChallenged(msg.sender, itemId, challengeId, data);
     }
 
@@ -202,6 +213,26 @@ contract MileysTCRegistries {
 
     function existingChallenge(bytes32 challengeId) public view returns (bool) {
         return(challenges[challengeId].exists == 1);
+    }
+
+    function challengesLength() external view returns (uint256) {
+        return challengesId.length;
+    }
+
+    function getChallengesLengthFromItem(bytes32 itemId) external view returns (uint256) {
+        return items[itemId].challengesId.length;
+    }
+
+    function itemsLength() external view returns (uint256) {
+        return itemsId.length;
+    }
+
+    function proposalsLength() external view returns (uint256) {
+        return proposalsId.length;
+    }
+
+    function getItemsLengthFromProposal(bytes32 proposalId) external view returns (uint256) {
+        return proposals[proposalId].itemsId.length;
     }
 }
 
