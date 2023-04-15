@@ -107,20 +107,6 @@ contract RegistryTest is Test {
         registry.addItems(proposalId, dataIds);
     }
 
-    function testAddItems_ShouldSuceed2() public {
-        _addProposal();
-        _mintAndApproveToken(users[1], registry.ITEM_COST());
-
-        string[] memory dataIds = new string[](10);
-        bytes32 proposalId = keccak256(abi.encode("QmZ5Y2JjZmM1"));
-        for(uint i = 0; i < 10; i++) {
-            dataIds[i] = "QmZ5Y2JjZmMDZIJ29";
-        }
-
-        vm.prank(users[1]);
-        registry.addItems(proposalId, dataIds);
-    }
-
     function testAddItems_ShouldRevert_WhenLengthExceeded() public {
         _addProposal();
         _mintAndApproveToken(users[1], registry.ITEM_COST());
@@ -140,12 +126,91 @@ contract RegistryTest is Test {
         _addProposal();
         _mintAndApproveToken(users[1], registry.ITEM_COST());
 
-        string[] memory proposalDataIds = new string[](1);
+        string[] memory itemDataIds = new string[](1);
         bytes32 proposalId = keccak256(abi.encode("QmZ5Y2JjZmM1"));
-        proposalDataIds[0] = "QmZ5Y2JjZmMDZIJ29";
-        _addItems(users[1], proposalId, proposalDataIds);
-
+        itemDataIds[0] = "QmZ5Y2JjZmMDZIJ29";
+        _addItems(users[1], proposalId, itemDataIds);
         
-        bytes32 itemId = keccak256(abi.encodePacked(proposalId, ));
+        string memory wrongDataIds = "QmZ5Y2";
+        bytes32 itemId = keccak256(abi.encodePacked(proposalId, wrongDataIds));
+
+        bytes32[] memory itemsIds = new bytes32[](1);
+        string[] memory challengeDataId = new string[](1);
+        itemsIds[0] = itemId;
+        challengeDataId[0] = "QmZ5Y2JjZmdezaiocjezaoij8382";
+
+        _mintAndApproveToken(users[2], registry.CHALLENGE_COST());
+        vm.prank(users[2]);
+        vm.expectRevert(MileysTCRegistries.ItemDoesNotExist.selector);
+        registry.challengeItems(itemsIds, challengeDataId);
+    }
+
+    function testChallenge_ShouldSucceed() public {
+        _addProposal();
+        _mintAndApproveToken(users[1], registry.ITEM_COST());
+
+        string[] memory itemDataIds = new string[](1);
+        bytes32 proposalId = keccak256(abi.encode("QmZ5Y2JjZmM1"));
+        itemDataIds[0] = "QmZ5Y2JjZmMDZIJ29";
+        _addItems(users[1], proposalId, itemDataIds);
+        
+        bytes32 itemId = keccak256(abi.encodePacked(proposalId, itemDataIds[0]));
+
+        bytes32[] memory itemsIds = new bytes32[](1);
+        string[] memory challengeDataId = new string[](1);
+        itemsIds[0] = itemId;
+        challengeDataId[0] = "QmZ5Y2JjZmdezaiocjezaoij8382";
+
+        _mintAndApproveToken(users[2], registry.CHALLENGE_COST());
+        vm.prank(users[2]);
+        registry.challengeItems(itemsIds, challengeDataId);
+    }
+
+    function testChallenge_ShouldRevert_IfChallengerIsItemRequester() public {
+        _addProposal();
+        _mintAndApproveToken(users[1], registry.ITEM_COST());
+
+        string[] memory itemDataIds = new string[](1);
+        bytes32 proposalId = keccak256(abi.encode("QmZ5Y2JjZmM1"));
+        itemDataIds[0] = "QmZ5Y2JjZmMDZIJ29";
+        _addItems(users[1], proposalId, itemDataIds);
+        
+        bytes32 itemId = keccak256(abi.encodePacked(proposalId, itemDataIds[0]));
+
+        bytes32[] memory itemsIds = new bytes32[](1);
+        string[] memory challengeDataId = new string[](1);
+        itemsIds[0] = itemId;
+        challengeDataId[0] = "QmZ5Y2JjZmdezaiocjezaoij8382";
+
+        _mintAndApproveToken(users[1], registry.CHALLENGE_COST());
+        vm.prank(users[1]);
+        vm.expectRevert(MileysTCRegistries.ChallengerIsItemRequester.selector);
+        registry.challengeItems(itemsIds, challengeDataId);
+    }
+
+    function testChallenge_ShouldRevert_IfAlreadyExists() public {
+        _addProposal();
+        _mintAndApproveToken(users[1], registry.ITEM_COST());
+
+        string[] memory itemDataIds = new string[](1);
+        bytes32 proposalId = keccak256(abi.encode("QmZ5Y2JjZmM1"));
+        itemDataIds[0] = "QmZ5Y2JjZmMDZIJ29";
+        _addItems(users[1], proposalId, itemDataIds);
+        
+        bytes32 itemId = keccak256(abi.encodePacked(proposalId, itemDataIds[0]));
+
+        bytes32[] memory itemsIds = new bytes32[](1);
+        string[] memory challengeDataId = new string[](1);
+        itemsIds[0] = itemId;
+        challengeDataId[0] = "QmZ5Y2JjZmdezaiocjezaoij8382";
+
+        _mintAndApproveToken(users[2], registry.CHALLENGE_COST());
+        vm.prank(users[2]);
+        registry.challengeItems(itemsIds, challengeDataId);
+
+        _mintAndApproveToken(users[2], registry.CHALLENGE_COST());
+        vm.prank(users[2]);
+        vm.expectRevert(MileysTCRegistries.ChallengeAlreadyExists.selector);
+        registry.challengeItems(itemsIds, challengeDataId);
     }
 }

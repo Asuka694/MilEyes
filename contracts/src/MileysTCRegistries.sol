@@ -77,7 +77,7 @@ contract MileysTCRegistries {
     
     error ChallengeDoesNotExist();
     error ChallengeAlreadyExists();
-    error ChallengerCanNotBeItemRequester();
+    error ChallengerIsItemRequester();
     error LengthMismatch();
     
     error ItemChallengeExpired();
@@ -171,10 +171,10 @@ contract MileysTCRegistries {
 
     /// @notice Challenge an existing item
     function _challengeItem(bytes32 itemId, string calldata data) internal {
-        if (block.timestamp > items[itemId].challengeExpiration) revert ItemChallengeExpired();
         if (existingItem(itemId) == false) revert ItemDoesNotExist();
+        if (block.timestamp > items[itemId].challengeExpiration) revert ItemChallengeExpired();
 
-        if (items[itemId].requester == msg.sender) revert ChallengerCanNotBeItemRequester();
+        if (items[itemId].requester == msg.sender) revert ChallengerIsItemRequester();
 
         bytes32 challengeId = keccak256(abi.encodePacked(itemId, data));
         if (existingChallenge(challengeId)) revert ChallengeAlreadyExists();
@@ -190,10 +190,6 @@ contract MileysTCRegistries {
         require(IERC20(token).transferFrom(msg.sender, address(this), CHALLENGE_COST));
 
         emit ItemChallenged(msg.sender, itemId, challengeId, data);
-    }
-
-    function resolveChallenge(bytes32 challengeId) external authorizedUsers(challengeId) {
-
     }
 
     function existingProposal(bytes32 proposalId) public view returns (bool) {
