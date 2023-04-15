@@ -56,13 +56,23 @@ export default function Header() {
                                     </a>
                                     <a
                                         href="/registries"
-                                        className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                                        className={`inline-flex items-center px-1 pt-1 text-gypsum font-medium ${
                                             pathname === "/registries"
-                                                ? "border-b-2 border-black"
+                                                ? "border-b-2 border-sand"
                                                 : ""
                                         } text-gray-900`}
                                     >
                                         Registries
+                                    </a>
+                                    <a
+                                        href="/registerProduct"
+                                        className={`inline-flex items-center px-1 pt-1 text-gypsum font-medium ${
+                                            pathname === "/registerProduct"
+                                                ? "border-b-2 border-sand"
+                                                : ""
+                                        } text-gray-900`}
+                                    >
+                                        Register a product
                                     </a>
                                     <a
                                         href="/avatar"
@@ -94,22 +104,44 @@ export default function Header() {
                                 href="/"
                                 className={`block ${
                                     pathname === "/"
-                                        ? "border-l-4 border-black"
+                                        ? "border-l-4 border-sand"
                                         : ""
-                                } py-2 pl-3 pr-4 text-base font-medium text-black`}
+                                } py-2 pl-3 pr-4 text-base font-medium text-gypsum`}
                             >
                                 Home
                             </Disclosure.Button>
                             <Disclosure.Button
                                 as="a"
                                 href="/registries"
-                                className={`block py-2 pl-3 pr-4 text-base font-medium text-black ${
+                                className={`block py-2 pl-3 pr-4 text-base font-medium text-gypsum ${
                                     pathname === "/registries"
-                                        ? "border-l-4 border-black"
+                                        ? "border-l-4 border-sand"
                                         : ""
                                 }`}
                             >
                                 Registries
+                            </Disclosure.Button>
+                            <Disclosure.Button
+                                as="a"
+                                href="/registries"
+                                className={`block py-2 pl-3 pr-4 text-base font-medium text-gypsum ${
+                                    pathname === "/registries"
+                                        ? "border-l-4 border-sand"
+                                        : ""
+                                }`}
+                            >
+                                Avatar
+                            </Disclosure.Button>
+                            <Disclosure.Button
+                                as="a"
+                                href="/registries"
+                                className={`block py-2 pl-3 pr-4 text-base font-medium text-gypsum ${
+                                    pathname === "/registerProduct"
+                                        ? "border-l-4 border-sand"
+                                        : ""
+                                }`}
+                            >
+                                Register a product
                             </Disclosure.Button>
                         </div>
                     </Disclosure.Panel>
