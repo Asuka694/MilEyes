@@ -1,13 +1,19 @@
 import { gql, useQuery } from "urql";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import { contractAddressRegistries } from "contract/variables";
+import ContractAbiTCRegistries from "abis/TCRegistries.json";
 
+import { useAccount, useContract, useSigner } from "wagmi";
 
 export default function NFT() {
 
   let [first, setFirst] = useState(4);
   let [skip, setSkip] = useState(0);
+
+  const { data: signer, isError, isLoading } = useSigner();
+  const { address, isConnected } = useAccount();
 
   const newData = (direction: string) => {
     switch(direction) {
@@ -22,6 +28,43 @@ export default function NFT() {
         break;
     }
   }
+
+  const getDatas = async () => {
+    try {
+      const raffleIndex = await contract?.getCurrentRaffleID();
+      const parsedRaffleIndex = parseInt(raffleIndex);
+      const partnersCollections = await contract?.getPartnersCollections();
+      const raffleArray = [];
+
+      for (let i = parsedRaffleIndex; i > 1; i--) {
+        const raffleItem = await contract?.getRaffleInfo(i);
+
+        const lol = [
+          ...raffleItem,
+          partnersCollections.includes(raffleItem[3]),
+        ];
+        raffleArray.push(lol);
+      }
+
+      setRaffle(raffleArray);
+      setPartners(partnersCollections);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const contract = useContract({
+    address: contractAddressRegistries,
+    abi: ContractAbiTCRegistries.abi,
+    signerOrProvider: signer,
+  });
+
+  useEffect(() => {
+    if (!signer) return;
+    if (address) {
+      getDatas();
+    }
+  }, [address, signer]);
 
   const graphQuery = gql`
     query ($first: Int!, $skip: Int!) {
