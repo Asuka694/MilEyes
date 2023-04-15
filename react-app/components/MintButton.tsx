@@ -1,38 +1,17 @@
 import AvatarABI from "../abis/Avatar";
 import { useContractWrite, usePrepareContractWrite } from "wagmi";
+import { useEffect, useState } from "react";
 import Button from "./Button";
 
-const STORAGE_CELO = {
-    address: "0xB50BFE4E3E792Dc72450aB25a730CECFE4F60C6a",
-    abi: AvatarABI.abi,
-};
-
-const STORAGE_ALFAJORES = {
-    address: "0xB50BFE4E3E792Dc72450aB25a730CECFE4F60C6a",
-    abi: AvatarABI.abi,
-};
-
-export default function MintButton({
-    chainId,
-    storeValue,
-}: {
-    chainId: number;
-    storeValue: number;
-}) {
-    console.log(chainId);
+export default function MintButton() {
 
     const { config } = usePrepareContractWrite({
-        address: "0xB50BFE4E3E792Dc72450aB25a730CECFE4F60C6a",
+        address: "0x0180C107b564bd47cc96EE6ab428A9a2b8A8a363",
         abi: AvatarABI.abi,
         functionName: 'createAvatar',
     });
-
-    const { data, isLoading, isSuccess, write } = useContractWrite(
-        config
-    );
-
-    if (!chainId) return null;
-    if (storeValue === undefined) return null;
+    
+    const { data, isLoading, isSuccess, write } = useContractWrite(config);
 
     return (
         <Button 
@@ -40,6 +19,6 @@ export default function MintButton({
         text="Create Avatar"
         isLoading={isLoading && <div>Check Wallet</div>}
         isSuccess={isSuccess && <div>Transaction: {JSON.stringify(data)}</div>}
-        />  
+        />
     );
 }
