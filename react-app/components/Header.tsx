@@ -55,14 +55,14 @@ export default function Header() {
                                         Home
                                     </a>
                                     <a
-                                        href="/registerProduct"
-                                        className={`inline-flex ${
-                                            pathname === "/registerProduct"
-                                                ? "border-b-2 border-sand"
+                                        href="/registries"
+                                        className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                                            pathname === "/registries"
+                                                ? "border-b-2 border-black"
                                                 : ""
-                                        } items-center px-1 pt-1 text-gypsum font-medium text-gray-900`}
+                                        } text-gray-900`}
                                     >
-                                        Register a product
+                                        Registries
                                     </a>
                                     <a
                                         href="/avatar"
@@ -102,14 +102,14 @@ export default function Header() {
                             </Disclosure.Button>
                             <Disclosure.Button
                                 as="a"
-                                href="/nft"
+                                href="/registries"
                                 className={`block py-2 pl-3 pr-4 text-base font-medium text-black ${
-                                    pathname === "/nft"
+                                    pathname === "/registries"
                                         ? "border-l-4 border-black"
                                         : ""
                                 }`}
                             >
-                                NFT
+                                Registries
                             </Disclosure.Button>
                         </div>
                     </Disclosure.Panel>
