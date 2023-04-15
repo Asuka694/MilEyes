@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useAccount, useContract, useProvider, useNetwork } from "wagmi";
 import StorageABI from "../abis/Storage";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import StorageButton from "@/components/StorageButton";
+import SubmitButton from "@/components/SubmitButton";
+import UploadToIPFS from "@/components/UploadImage";
 
 export default function Storage() {
     const { isConnected } = useAccount();
@@ -26,26 +27,6 @@ export default function Storage() {
     });
 
     useEffect(() => {
-        (async () => {
-            const events = await contract?.queryFilter("newNumber", 17082530);
-            const args = events?.map((event) => event.args);
-            if (args) {
-                setPreviousUsers(args);
-            }
-        })();
-    }, [chain?.id]);
-
-    useEffect(() => {
-        contract?.on("newNumber", (number, sender) => {
-            setPreviousUsers([...previousUsers, { number, sender }]);
-        });
-
-        return () => {
-            contract?.removeAllListeners();
-        };
-    }, [previousUsers]);
-
-    useEffect(() => {
         setWalletConnected(isConnected);
     }, [isConnected]);
 
@@ -53,21 +34,26 @@ export default function Storage() {
         <div className="w-[500px]  m-auto  flex flex-col space-y-2">
             {isWalletConneted ? (
                 <>
-                    <InputField
+
+                    <UploadToIPFS />
+
+`                    <InputField
                         className="no-spinner"
-                        label="Enter a Number"
+                        label="Enter a name for the product"
                         value={value ?? ""}
                         onChange={({ target }) => {
                             return target.value == ""
                                 ? setValue(null)
                                 : setValue(Number(target.value));
                         }}
-                        type="number"
+                        type="string"
                     />
-                    <StorageButton
+
+                    <SubmitButton
                         chainId={chain?.id as number}
                         storeValue={value as number}
                     />
+
                 </>
             ) : (
                 <div className="flex justify-center">
@@ -80,25 +66,6 @@ export default function Storage() {
                 </div>
             )}
             <div>
-                <table className="table mt-7 w-full">
-                    <caption className="mb-5 text-lg font-bold">
-                        Previous Users
-                    </caption>
-                    <tbody className="h-96 overflow-y-auto">
-                        {previousUsers.map(({ number, sender }, index) => {
-                            return (
-                                <tr
-                                    key={index}
-                                    className="flex items-center space-x-2 w-full"
-                                >
-                                    <Jazzicon diameter={20} address={sender} />
-                                    <td className="p-2">{sender}</td>
-                                    <td className="p-2">{number.toString()}</td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
             </div>
         </div>
     );

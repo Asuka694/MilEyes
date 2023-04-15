@@ -49,4 +49,12 @@ contract AvatarTest is Test {
         vm.stopPrank();
         avatar.getTokenURI(1);
     }
+
+    function testAvatarCreation_GetBalanceOfOrNot() public {
+        avatar.balanceOf(users[0]);
+        vm.startPrank(users[0]);
+        avatar.createAvatar();
+        avatar.balanceOf(users[0]);
+        vm.stopPrank();
+    }
 }

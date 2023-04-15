@@ -8,14 +8,14 @@ export default function Header() {
     const router = useRouter();
     const { pathname } = router;
     return (
-        <Disclosure as="nav" className="bg-prosperity border-b border-black">
+        <Disclosure as="nav" className="bg-forest border-b border-sand">
             {({ open }) => (
                 <>
                     <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
                         <div className="relative flex h-16 justify-between">
                             <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
                                 {/* Mobile menu button */}
-                                <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-black focus:outline-none focus:ring-1 focus:ring-inset focus:rounded-none focus:ring-black">
+                                <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gypsum focus:outline-none focus:ring-1 focus:ring-inset focus:rounded-none focus:ring-black">
                                     <span className="sr-only">
                                         Open main menu
                                     </span>
@@ -34,60 +34,41 @@ export default function Header() {
                             </div>
                             <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                                 <div className="flex flex-shrink-0 items-center">
-                                    <Image
+                                    <a href="/" >                                    <Image
                                         className="block h-8 w-auto sm:block lg:block"
-                                        src="/logo.svg"
-                                        width="24"
-                                        height="24"
-                                        alt="Celo Logo"
+                                        src="/logo_3.png"
+                                        width="1000"
+                                        height="1000"
+                                        alt="Mileyes Logo"
                                     />
+                                    </a>
                                 </div>
                                 <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                                     <a
                                         href="/"
                                         className={`inline-flex items-center ${
                                             pathname === "/"
-                                                ? "border-b-2 border-black"
+                                                ? "border-b-2 border-sand"
                                                 : ""
-                                        } px-1 pt-1 text-sm font-medium text-gray-900`}
+                                        } px-1 pt-1 text-gypsum font-medium text-gray-900`}
                                     >
                                         Home
                                     </a>
                                     <a
-                                        href="/storage"
+                                        href="/registerProduct"
                                         className={`inline-flex ${
-                                            pathname === "/storage"
-                                                ? "border-b-2 border-black"
+                                            pathname === "/registerProduct"
+                                                ? "border-b-2 border-sand"
                                                 : ""
-                                        } items-center px-1 pt-1 text-sm font-medium text-gray-900`}
+                                        } items-center px-1 pt-1 text-gypsum font-medium text-gray-900`}
                                     >
-                                        Storage
-                                    </a>
-                                    <a
-                                        href="/masa"
-                                        className={`inline-flex ${
-                                            pathname === "/masa"
-                                                ? "border-b-2 border-black"
-                                                : ""
-                                        } items-center px-1 pt-1 text-sm font-medium text-gray-900`}
-                                    >
-                                        Masa
-                                    </a>
-                                    <a
-                                        href="/nft"
-                                        className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
-                                            pathname === "/nft"
-                                                ? "border-b-2 border-black"
-                                                : ""
-                                        } text-gray-900`}
-                                    >
-                                        NFT
+                                        Register a product
                                     </a>
                                     <a
                                         href="/avatar"
-                                        className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                                        className={`inline-flex items-center px-1 pt-1 text-gypsum font-medium ${
                                             pathname === "/avatar"
-                                                ? "border-b-2 border-black"
+                                                ? "border-b-2 border-sand"
                                                 : ""
                                         } text-gray-900`}
                                     >
@@ -118,28 +99,6 @@ export default function Header() {
                                 } py-2 pl-3 pr-4 text-base font-medium text-black`}
                             >
                                 Home
-                            </Disclosure.Button>
-                            <Disclosure.Button
-                                as="a"
-                                href="/storage"
-                                className={`block py-2 pl-3 pr-4 text-base font-medium text-black ${
-                                    pathname === "/storage"
-                                        ? "border-l-4 border-black"
-                                        : ""
-                                }`}
-                            >
-                                Storage
-                            </Disclosure.Button>
-                            <Disclosure.Button
-                                as="a"
-                                href="/storage"
-                                className={`block py-2 pl-3 pr-4 text-base font-medium text-black ${
-                                    pathname === "/masa"
-                                        ? "border-l-4 border-black"
-                                        : ""
-                                }`}
-                            >
-                                Masa
                             </Disclosure.Button>
                             <Disclosure.Button
                                 as="a"
