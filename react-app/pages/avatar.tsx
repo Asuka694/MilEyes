@@ -1,65 +1,53 @@
 import InputField from "@/components/InputField";
 import Jazzicon from "@/components/Jazzicon";
 import { useEffect, useState } from "react";
-import { useAccount, useContract, useProvider, useNetwork } from "wagmi";
+import { useAccount, useContract, useProvider, useNetwork, useContractRead } from "wagmi";
 import StorageABI from "../abis/Storage";
 import AvatarABI from "../abis/Avatar.json";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import MintButton from "@/components/MintButton";
+import RadarChart from "@/components/RadarChart";
+import Image from "next/image";
 
 export default function Avatar() {
     const { isConnected } = useAccount();
     const { chain } = useNetwork();
     const [previousUsers, setPreviousUsers] = useState<any[]>([]);
     const [value, setValue] = useState<number | null>(null);
-    const [isWalletConneted, setWalletConnected] = useState(false);
+    const [isWalletConnected, setWalletConnected] = useState(false);
+    const [isMinted, setIsMinted] = useState(false);
+
+    const NFT_COLLECTION_ADDRESS = "0x0180C107b564bd47cc96EE6ab428A9a2b8A8a363";
 
     const provider = useProvider();
+    const currentAddy = useAccount().address;
 
     const contract = useContract({
         // Addresses for Celo and Alfajores
         address:
             chain?.id === 42220
-                ? "0xB50BFE4E3E792Dc72450aB25a730CECFE4F60C6a"
-                : "0xB50BFE4E3E792Dc72450aB25a730CECFE4F60C6a",
+                ? NFT_COLLECTION_ADDRESS
+                : NFT_COLLECTION_ADDRESS,
         abi: AvatarABI.abi,
         signerOrProvider: provider,
     });
 
-    /*
-    useEffect(() => {
-        (async () => {
-            const events = await contract?.queryFilter("newNumber", 17082530);
-            const args = events?.map((event) => event.args);
-            if (args) {
-                setPreviousUsers(args);
-            }
-        })();
-    }, [chain?.id]);
+    const { data } = useContractRead({
+            address: NFT_COLLECTION_ADDRESS,
+            abi: AvatarABI.abi,
+            functionName: 'balanceOf',
+            args: [currentAddy],
+    })
 
-    /*
+    const src = `https://i.imgur.com/8Iav7eo.png`;
 
-    useEffect(() => {
-        (async () => {
-            const events = await contract?.queryFilter("newNumber", 17082530);
-            const args = events?.map((event) => event.args);
-            if (args) {
-                setPreviousUsers(args);
-            }
-        })();
-    }, [chain?.id]);
+    const balance = Number(data);
 
-    useEffect(() => {
-        contract?.on("newNumber", (number, sender) => {
-            setPreviousUsers([...previousUsers, { number, sender }]);
-        });
-
-        return () => {
-            contract?.removeAllListeners();
-        };
-    }, [previousUsers]);
-
-    */
+    useEffect(()=>{
+    if (balance === 1) {
+        setIsMinted(true);
+    }
+    })
 
     useEffect(() => {
         setWalletConnected(isConnected);
@@ -67,22 +55,38 @@ export default function Avatar() {
 
     return (
         <div className="w-[500px]  m-auto  flex flex-col space-y-2">
-            {isWalletConneted ? (
+            {!isMinted ? (
                 <>
+                <div>
+                    <div className="mb-5 text-lg font-bold">
+                        You don&apos;t have a profile yet :( Let&apos;s mint your profile nft !
+                    </div>
+                </div>
                     <MintButton
-                        chainId={chain?.id as number}
-                        storeValue={value as number}
                     />
                 </>
             ) : (
-                <div className="flex justify-center">
-                    <ConnectButton
-                        showBalance={{
-                            smallScreen: true,
-                            largeScreen: false,
-                        }}
-                    />
-                </div>
+                <>
+                    <div className="mb-5 text-lg font-bold">
+                        Welcome back. Here is your profile :
+                    </div>
+                    <div className="Profile_div">                    
+                        <div className="NFT_div">
+                            <Image
+                            className="nftProfile"
+                            loader={() => src} 
+                            src={src}
+                            width="200"
+                            height="200"
+                            alt=""  
+                            />
+                        </div>
+                        <div className="Stats_div">
+                            <div> *statistiques censé être ici*</div>
+                            <RadarChart />
+                        </div>
+                    </div>
+                </>
             )}
             <div>
                 <table className="table mt-7 w-full">

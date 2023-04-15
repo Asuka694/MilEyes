@@ -36,10 +36,10 @@ export default function Header() {
                                 <div className="flex flex-shrink-0 items-center">
                                     <Image
                                         className="block h-8 w-auto sm:block lg:block"
-                                        src="/logo.svg"
-                                        width="24"
-                                        height="24"
-                                        alt="Celo Logo"
+                                        src="/logo_2.png"
+                                        width="200"
+                                        height="200"
+                                        alt="Mileyes Logo"
                                     />
                                 </div>
                                 <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
