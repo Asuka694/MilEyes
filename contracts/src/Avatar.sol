@@ -26,6 +26,19 @@ contract Avatar is ERC721 {
         return _ownerOf(_tokenId);
     }
 
+    /*
+    function _transferFrom(address from, address to, uint256) internal pure {
+        require(
+            from == address(0) || to == address(0),
+            "This a Soulbound token. It cannot be transferred. It can only be burned by the token owner."
+        );
+    }
+
+    function _burn(uint256 tokenId) internal override(ERC721) {
+        super._burn(tokenId);
+    }
+    */
+
     function getBaseURI() internal view virtual returns (string memory) {
         return uriPrefix;
     }

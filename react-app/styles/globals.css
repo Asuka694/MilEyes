@@ -7,3 +7,24 @@
     -webkit-appearance: none;
     margin: 0;
 }
+
+.Profile_div {
+    display: flex;
+    align-items: center;
+}
+
+.NFT_div {
+    flex: 1;
+    text-align: left;
+    margin-left: '100px';
+}
+
+.nftProfile {
+    border-radius: 20%;
+}
+
+.Stats_div {
+    flex: 1;
+    text-align: right;
+    margin-left: '100px';
+}
