@@ -50,6 +50,9 @@ contract MileysTCRegistries {
     
     mapping(bytes32 => Item) public items;
 
+    bytes32[] public proposalsId;
+    bytes32[] public itemsId;
+    bytes32[] public challengesId;
 
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
@@ -122,6 +125,7 @@ contract MileysTCRegistries {
         });
 
         IERC20(token).transferFrom(msg.sender, address(this), cost);
+        proposalsId.push(proposalId);
 
         emit ProposalSubmitted(proposalId, msg.sender, data);
     }
@@ -152,6 +156,8 @@ contract MileysTCRegistries {
             requester: msg.sender,
             data: data
         });
+
+        itemsId.push(itemId);
 
         emit ItemAdded(proposalId, itemId, data);
     }
@@ -191,6 +197,8 @@ contract MileysTCRegistries {
         voting.startPoll(challengeId);
         require(IERC20(token).transferFrom(msg.sender, address(this), CHALLENGE_COST));
 
+        challengesId.push(challengeId);
+        
         emit ItemChallenged(msg.sender, itemId, challengeId, data);
     }
 

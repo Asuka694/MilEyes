@@ -14,10 +14,10 @@ contract MileysTCRegistriesScript is Script {
     MileysTCRVoting internal voting;    
 
     function run() public {
-        uint256 registriesDeployerKey = vm.envUint("REGISTRIES_DEPLOYER_KEY");
+        uint256 registriesDeployerKey = vm.envUint("VOTING_DEPLOYER_KEY");
 
         address registriesDeployerAddress = vm.addr(registriesDeployerKey);
-        address registriesAddress = LibRLP.computeAddress(registriesDeployerAddress, 2);
+        address registriesAddress = LibRLP.computeAddress(registriesDeployerAddress, 4);
 
         vm.startBroadcast(registriesDeployerKey);
         token = new mockERC20();
