@@ -34,7 +34,7 @@ contract Utilities is DSTest {
         vm.roll(targetBlock);
     }
 
-    function predictContractAddress(address user, uint256 distanceFromCurrentNonce) external returns (address) {
+    function predictContractAddress(address user, uint256 distanceFromCurrentNonce) external view returns (address) {
         return LibRLP.computeAddress(user, vm.getNonce(user) + distanceFromCurrentNonce);
     }
 }

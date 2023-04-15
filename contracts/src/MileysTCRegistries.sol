@@ -3,12 +3,10 @@ pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import { MileysTCRVoting } from "./MileysTCRVoting.sol";
+
 contract MileysTCRegistries {
     enum Status { Pending, Approved, Rejected }
-
-    enum Party { Proposer, Challenger }
-
-    enum DisputeStatus { Pending, Resolved }
 
     /// @param requester The address of the user who made the request.
     struct Proposal {
@@ -19,7 +17,8 @@ contract MileysTCRegistries {
     }
 
     struct Item {
-        uint96 challengeExpiration;
+        uint88 challengeExpiration;
+        uint8 pendingChallenge;
         address requester;
         string data;
     }
@@ -32,15 +31,11 @@ contract MileysTCRegistries {
         string data;
     }
 
-    struct Vote {
-        uint256 totalProposer;
-        uint256 totalChallenger;
-    }
-
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
     //////////////////////////////////////////////////////////////*/
     address public token;
+    MileysTCRVoting public voting;
 
     uint256 public constant PROPOSAL_COST = 1 ether;
     uint256 public constant ITEM_COST = 0.1 ether;
@@ -54,7 +49,6 @@ contract MileysTCRegistries {
     mapping(bytes32 => Challenge) public challenges;
     
     mapping(bytes32 => Item) public items;
-    mapping(bytes32 => Vote) public votes;
 
 
     /*//////////////////////////////////////////////////////////////
@@ -77,6 +71,8 @@ contract MileysTCRegistries {
     
     error ChallengeDoesNotExist();
     error ChallengeAlreadyExists();
+    error ItemHasPendingChallenge();
+
     error ChallengerIsItemRequester();
     error LengthMismatch();
     
@@ -84,14 +80,16 @@ contract MileysTCRegistries {
     error ItemAlreadyExist();
     error ItemDoesNotExist();
 
+
     error LengthExceeded();
 
     error NotAuthorized();
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
-    constructor(address _tokenAddress) {
+    constructor(address _tokenAddress, address _voting) {
         token = _tokenAddress;
+        voting = MileysTCRVoting(_voting);
     }
 
     /// @dev Checks if the caller is the challenger or the item requester, reverts if not
@@ -149,7 +147,8 @@ contract MileysTCRegistries {
         if (existingItem(itemId)) revert ItemAlreadyExist();
 
         items[itemId] = Item({
-            challengeExpiration: uint96(block.timestamp + challengeDuration),
+            challengeExpiration: uint88(block.timestamp + challengeDuration),
+            pendingChallenge: 0,
             requester: msg.sender,
             data: data
         });
@@ -173,7 +172,7 @@ contract MileysTCRegistries {
     function _challengeItem(bytes32 itemId, string calldata data) internal {
         if (existingItem(itemId) == false) revert ItemDoesNotExist();
         if (block.timestamp > items[itemId].challengeExpiration) revert ItemChallengeExpired();
-
+        if (items[itemId].pendingChallenge == 1) revert ItemHasPendingChallenge();
         if (items[itemId].requester == msg.sender) revert ChallengerIsItemRequester();
 
         bytes32 challengeId = keccak256(abi.encodePacked(itemId, data));
@@ -187,6 +186,9 @@ contract MileysTCRegistries {
             data: data
         });
 
+        items[itemId].pendingChallenge = 1;
+
+        voting.startPoll(challengeId);
         require(IERC20(token).transferFrom(msg.sender, address(this), CHALLENGE_COST));
 
         emit ItemChallenged(msg.sender, itemId, challengeId, data);
