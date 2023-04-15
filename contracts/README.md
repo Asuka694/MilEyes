@@ -1,7 +1,13 @@
+## MilEyes
+
+### Overview
+
+The project is based on the [Token Curated Registry](https://medium.com/@simondlr/token-curated-registries-1-0-61a232f8dac7) (TCR) concept. The TCR is a decentralized, community-driven registry of items that are maintained by a set of rules enforced by a token-based voting system.
+
 ### Contracts addresses deployed on alfajores
 
-AttributeStore = 0x9dc61cd94064528e32325080b48bce7ae15d0cbf
-DLL = 0xacc9cbcb7fcbb4348995e19d6c2988f559b9ac4b
-TOKEN = 0x909451ded122ea46ffc9fc4515a9f62e0e49e775
-VOTING = 0x0410707d45c1950b9d9eb8157cdd71884184c045
-Registries = 0x651123a7eb11bd97080c9de883e62b6cf397dfe3
+AttributeStore = `0x9dc61cd94064528e32325080b48bce7ae15d0cbf`
+DLL = `0xacc9cbcb7fcbb4348995e19d6c2988f559b9ac4b`
+TOKEN = `0x909451ded122ea46ffc9fc4515a9f62e0e49e775`
+VOTING = `0x0410707d45c1950b9d9eb8157cdd71884184c045`
+Registries = `0x651123a7eb11bd97080c9de883e62b6cf397dfe3`
