@@ -138,10 +138,10 @@ export default function Registries() {
         <>
       <h2 className="text-3xl font-bold text-onyx p-4 ">Registries</h2>   
       <ul role="list" className="grid grid-cols-2 mx-4 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
-        {registry.map((item, index) => (
+        {registry.map((_, index) => (
           <li key={index} className="relative">
             <div className="group aspect-h-10 aspect-w-10 block w-full overflow-hidden bg-gray-100 focus-within:ring-2 focus-within:ring-forest focus-within:ring-offset-2 focus-within:ring-offset-gray-100">
-            <Link href={`/single/?product=${CID[index]}`}>
+            <Link href={`/single/?product=${CID[index]}&id=${index}`}>
                 <Image src={`${filesList[index].image}?w=1000&q=75`}
                   alt={filesList[index].product_name}
                   className="pointer-events-none object-cover group-hover:opacity-75"
