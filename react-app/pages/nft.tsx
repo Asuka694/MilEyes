@@ -73,7 +73,7 @@ export default function NFT() {
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-onyx p-4 ">Celo Boxes</h2>   
+      <h2 className="text-3xl font-bold text-onyx p-4 ">Registries</h2>   
       <ul role="list" className="grid grid-cols-2 mx-4 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
         {data.tokens.map((token: Token) => (
           <li key={token.tokenID} className="relative">

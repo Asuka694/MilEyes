@@ -81,7 +81,7 @@ export default function Header() {
                                                 : ""
                                         } text-gray-900`}
                                     >
-                                        NFT
+                                        Registries
                                     </a>
                                     <a
                                         href="/avatar"
@@ -150,7 +150,7 @@ export default function Header() {
                                         : ""
                                 }`}
                             >
-                                NFT
+                                Registries
                             </Disclosure.Button>
                         </div>
                     </Disclosure.Panel>
