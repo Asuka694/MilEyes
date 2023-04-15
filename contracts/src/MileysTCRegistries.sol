@@ -14,6 +14,7 @@ contract MileysTCRegistries {
         uint88 totalDeposit;
         uint8 exists;
         string data;
+        bytes32[] itemsId;
     }
 
     struct Item {
@@ -21,6 +22,7 @@ contract MileysTCRegistries {
         uint8 pendingChallenge;
         address requester;
         string data;
+        bytes32[] challengesId;
     }
 
     struct Challenge {
@@ -117,12 +119,11 @@ contract MileysTCRegistries {
 
         uint256 cost = PROPOSAL_COST;
 
-        proposals[proposalId] = Proposal({
-            requester: msg.sender,
-            totalDeposit: uint88(cost),
-            exists: 1,
-            data: data
-        });
+        Proposal storage proposal = proposals[proposalId];
+        proposal.requester = msg.sender;
+        proposal.totalDeposit = uint88(cost);
+        proposal.exists = 1;
+        proposal.data = data;
 
         IERC20(token).transferFrom(msg.sender, address(this), cost);
         proposalsId.push(proposalId);
@@ -150,13 +151,13 @@ contract MileysTCRegistries {
         bytes32 itemId = keccak256(abi.encodePacked(proposalId, data));
         if (existingItem(itemId)) revert ItemAlreadyExist();
 
-        items[itemId] = Item({
-            challengeExpiration: uint88(block.timestamp + challengeDuration),
-            pendingChallenge: 0,
-            requester: msg.sender,
-            data: data
-        });
+        Item storage item = items[itemId];
+        item.challengeExpiration = uint88(block.timestamp + challengeDuration);
+        item.pendingChallenge = 0;
+        item.requester = msg.sender;
+        item.data = data;
 
+        proposals[proposalId].itemsId.push(itemId);
         itemsId.push(itemId);
 
         emit ItemAdded(proposalId, itemId, data);
@@ -184,16 +185,16 @@ contract MileysTCRegistries {
         bytes32 challengeId = keccak256(abi.encodePacked(itemId, data));
         if (existingChallenge(challengeId)) revert ChallengeAlreadyExists();
 
-        challenges[challengeId] = Challenge({
-            challenger: msg.sender,
-            exists: 1,
-            itemId: itemId,
-            status: Status.Pending,
-            data: data
-        });
+        Challenge storage challenge = challenges[challengeId];
+        challenge.challenger = msg.sender;
+        challenge.exists = 1;
+        challenge.itemId = itemId;
+        challenge.status = Status.Pending;
+        challenge.data = data;
 
         items[itemId].pendingChallenge = 1;
-
+        items[itemId].challengesId.push(challengeId);
+        
         voting.startPoll(challengeId);
         require(IERC20(token).transferFrom(msg.sender, address(this), CHALLENGE_COST));
 
@@ -212,6 +213,26 @@ contract MileysTCRegistries {
 
     function existingChallenge(bytes32 challengeId) public view returns (bool) {
         return(challenges[challengeId].exists == 1);
+    }
+
+    function challengesLength() external view returns (uint256) {
+        return challengesId.length;
+    }
+
+    function getChallengesLengthFromItem(bytes32 itemId) external view returns (uint256) {
+        return items[itemId].challengesId.length;
+    }
+
+    function itemsLength() external view returns (uint256) {
+        return itemsId.length;
+    }
+
+    function proposalsLength() external view returns (uint256) {
+        return proposalsId.length;
+    }
+
+    function getItemsLengthFromProposal(bytes32 proposalId) external view returns (uint256) {
+        return proposals[proposalId].itemsId.length;
     }
 }
 
