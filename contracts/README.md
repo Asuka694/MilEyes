@@ -1,7 +1,7 @@
-### Address alfajores
+### Contracts addresses deployed on alfajores
 
-AttributeStore = 0x6fd10f835d309f76c139be20ed7aaf32f8eb6b91
-DLL = 0x564be72aaa9e8525bda555d9249104de34d6c50d
-TOKEN = 0x8307be2484032d7d721a5c5620596dacbf4c5f74
-VOTING = 0xd301580264609593d1b813b407e26bf2568f3202
-Registries = 0x269594e6b0dbf498a2191e5a0e5921ed71e738da
+AttributeStore = 0x788a86b5eadbe4d9f533ab05ade799176d72758f
+DLL = 0x16a5c98665f722ffdfa642f66924cf8e734d3bed
+TOKEN = 0xde56e479c527729a919fe5360444300ba6315efd
+VOTING = 0x0b43f977a1143ed33531d9dc156861a5b04603a0
+Registries = 0xf5ab882f742ee868701225e50444caf17b2d4f50

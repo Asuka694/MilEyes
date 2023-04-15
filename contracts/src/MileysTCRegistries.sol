@@ -223,6 +223,10 @@ contract MileysTCRegistries {
         return items[itemId].challengesId.length;
     }
 
+    function getChallengeFromItem(bytes32 itemId, uint256 index) external view returns (bytes32) {
+        return items[itemId].challengesId[index];
+    }
+
     function itemsLength() external view returns (uint256) {
         return itemsId.length;
     }
@@ -233,6 +237,10 @@ contract MileysTCRegistries {
 
     function getItemsLengthFromProposal(bytes32 proposalId) external view returns (uint256) {
         return proposals[proposalId].itemsId.length;
+    }
+
+    function getItemFromProposal(bytes32 proposalId, uint256 index) external view returns (bytes32) {
+        return proposals[proposalId].itemsId[index];
     }
 }
 

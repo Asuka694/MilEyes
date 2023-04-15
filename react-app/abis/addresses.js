@@ -1,3 +1,3 @@
-export const contractAddressRegistries = "0x269594e6b0dbf498a2191e5a0e5921ed71e738da";
-export const contractAddressToken = "0x8307be2484032d7d721a5c5620596dacbf4c5f74";
-export const contractAddressVoting = "0xd301580264609593d1b813b407e26bf2568f3202";
+export const contractAddressRegistries = "0xf5ab882f742ee868701225e50444caf17b2d4f50";
+export const contractAddressToken = "0xde56e479c527729a919fe5360444300ba6315efd";
+export const contractAddressVoting = "0x0b43f977a1143ed33531d9dc156861a5b04603a0";
