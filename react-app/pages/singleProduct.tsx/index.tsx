@@ -1,14 +1,14 @@
 import { NextPage } from "next";
 import Header from "components/Header";
-import SectionRaffle from "components/Product";
+import SectionProduct from "components/SectionProduct";
 
-const SingleRaffle: NextPage = () => {
+const SingleProduct: NextPage = () => {
   return (
     <>
       <Header />
-      <SectionRaffle />
+      <SectionProduct />
     </>
   );
 };
 
-export default SingleRaffle;
+export default SingleProduct;

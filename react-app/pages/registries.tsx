@@ -1,9 +1,12 @@
 import { gql, useQuery } from "urql";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/router";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { contractAddressRegistries } from "abis/addresses";
 import ContractAbiTCRegistries from "abis/TCRegistries.json";
+
+import Link from "next/link";
 
 import { useAccount, useContract, useSigner } from "wagmi";
 
@@ -12,8 +15,10 @@ export default function Registries() {
   let [first, setFirst] = useState(15);
   let [skip, setSkip] = useState(0);
 
+  const router = useRouter();
   const [registry, setRegistry] = useState<string[][]>([]);
   const [filesList, setfilesList] = useState<any[]>([]);
+  const [CID, setCID] = useState<string[]>([]);
   const { data: signer } = useSigner();
   const { address, isConnected } = useAccount();
 
@@ -36,19 +41,20 @@ export default function Registries() {
       const registryIndex = await contract?.proposalsLength();
       const parsedregistryIndex = parseInt(registryIndex);
       const registryArray = [];
-      const imageArray = [];
-
+      const CIDArray = [];
       for (let i = parsedregistryIndex - 1; i >= 0; i--) {
         const registryItem = await contract?.proposalsId(i);
         const item = await contract?.proposals(registryItem);
         const url = "https://cmb.mypinata.cloud/ipfs/" + item.data;
         const response = await fetch(url);
         const jsonResponse = await response.json();
-        imageArray.push(jsonResponse.image);
         filesList.push(jsonResponse);
         registryArray.push(registryItem);
+        CIDArray.push(item.data);
+        console.log(CIDArray);
       }
       setRegistry(registryArray);
+      setCID(CIDArray);
     } catch (e) {
       console.log(e);
     }
@@ -135,15 +141,14 @@ export default function Registries() {
         {registry.map((item, index) => (
           <li key={index} className="relative">
             <div className="group aspect-h-10 aspect-w-10 block w-full overflow-hidden bg-gray-100 focus-within:ring-2 focus-within:ring-forest focus-within:ring-offset-2 focus-within:ring-offset-gray-100">
-              <Image src={`${filesList[index].image}?w=1000&q=75`}
-                alt={item[1]}
-                className="pointer-events-none object-cover group-hover:opacity-75"
-                width={1000}
-                height={1000}
-            />
-              <button type="button" className="absolute inset-0 focus:outline-none">
-                {/*<span className="sr-only">View details for {token.ipfsURI.name}</span>*/}
-              </button>
+            <Link href={`/single/?product=${CID[index]}`}>
+                <Image src={`${filesList[index].image}?w=1000&q=75`}
+                  alt={filesList[index].product_name}
+                  className="pointer-events-none object-cover group-hover:opacity-75"
+                  width={1000}
+                  height={1000}
+                />
+            </Link>
             </div>
             <p className="pointer-events-none mt-2 block truncate text-sm font-medium text-gray-900">{filesList[index].product_name}</p>
           </li>

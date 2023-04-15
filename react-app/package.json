@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "@celo/rainbowkit-celo": "^0.11.0",
+        "@enzoferey/ethers-error-parser": "^0.2.3",
         "@headlessui/react": "^1.7.13",
         "@heroicons/react": "^2.0.17",
         "@masa-finance/masa-sdk": "^1.13.3",
@@ -22,6 +23,8 @@
         "react": "18.2.0",
         "react-dom": "18.2.0",
         "react-hot-toast": "^2.4.0",
+        "react-spinners": "^0.13.8",
+        "react-toastify": "^9.1.2",
         "urql": "^4.0.0",
         "wagmi": "^0.12.2"
     },
