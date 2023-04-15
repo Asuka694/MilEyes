@@ -68,7 +68,14 @@ contract MileysTCRVoting {
                                  ERRORS
     //////////////////////////////////////////////////////////////*/
     error PollAlreadyStarted();
+    error PollDoesNotExist();
+    error CommitPeriodEnded();
+    error InvalidCommitHash();
+    error InsufficientVotingPower();
 
+    /*//////////////////////////////////////////////////////////////
+                               MODIFIERS
+    //////////////////////////////////////////////////////////////*/
     modifier onlyRegistry {
         require(msg.sender == address(registry), "Only registry can call this function");
         _;
@@ -77,19 +84,34 @@ contract MileysTCRVoting {
     constructor(address _token, address _registry) {
         token = IERC20(_token);
         registry = MileysTCRegistries(_registry);
-        pollId = 1;
     }
 
+    /*//////////////////////////////////////////////////////////////
+                          VOTINGS RIGHTS LOGIC
+    //////////////////////////////////////////////////////////////*/
     /// @notice Loads amount ERC20 tokens into the voting contract for one-to-one voting rights
     /// @dev Assumes that msg.sender has approved voting contract to spend on their behalf
     /// @param amount The number of votingTokens desired in exchange for ERC20 tokens
     function requestVotingRights(uint amount) public {
-        require(token.balanceOf(msg.sender) >= amount);
-        voteTokenBalance[msg.sender] += amount;
         require(token.transferFrom(msg.sender, address(this), amount));
+        voteTokenBalance[msg.sender] += amount;
+
         emit VotingRightsGranted(amount, msg.sender);
     }
 
+    /// @notice Withdraw amount ERC20 tokens from the voting contract, revoking these voting rights
+    /// @param amount The number of ERC20 tokens desired in exchange for voting rights
+    function withdrawVotingRights(uint amount) external {
+        uint256 availableTokens = voteTokenBalance[msg.sender] - getLockedTokens(msg.sender);
+        require(availableTokens >= amount);
+        voteTokenBalance[msg.sender] -= amount;
+        require(token.transfer(msg.sender, amount));
+        emit VotingRightsWithdrawn(amount, msg.sender);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                          RESCUE TOKENS LOGIC
+    //////////////////////////////////////////////////////////////*/
     /// @dev Unlocks tokens locked in unrevealed vote where poll has ended
     /// @param _pollID Integer identifier associated with the target poll
     function rescueTokens(uint _pollID) public {
@@ -109,18 +131,13 @@ contract MileysTCRVoting {
         }
     }
 
-    /// @notice Withdraw amount ERC20 tokens from the voting contract, revoking these voting rights
-    /// @param amount The number of ERC20 tokens desired in exchange for voting rights
-    function withdrawVotingRights(uint amount) external {
-        uint256 availableTokens = voteTokenBalance[msg.sender] - getLockedTokens(msg.sender);
-        require(availableTokens >= amount);
-        voteTokenBalance[msg.sender] -= amount;
-        require(token.transfer(msg.sender, amount));
-        emit VotingRightsWithdrawn(amount, msg.sender);
-    }
-
+    /*//////////////////////////////////////////////////////////////
+                              VOTING LOGIC
+    //////////////////////////////////////////////////////////////*/
     function startPoll(bytes32 _challengeId) external onlyRegistry {
         uint256 currentPollId = pollId;
+        currentPollId++;
+
         if (polls[currentPollId].commitEndDate != 0) revert PollAlreadyStarted();
 
         uint256 currentTimestamp = block.timestamp;
@@ -132,7 +149,6 @@ contract MileysTCRVoting {
         currentPoll.revealEndDate = currentTimestamp + commitDuration + revealDuration;
         currentPoll.quorum = minQuorum;
 
-        currentPollId++;
         pollId = currentPollId;
 
         emit PollStarted(currentPollId, _challengeId);
@@ -161,7 +177,7 @@ contract MileysTCRVoting {
     /// @param _numTokens The number of tokens to be committed towards the target poll
     /// @param _prevPollID The ID of the poll that the user has voted the maximum number of tokens in which is still less than or equal to numTokens
     function commitVote(uint _pollID, bytes32 _secretHash, uint _numTokens, uint _prevPollID) public {
-        require(commitPeriodActive(_pollID));
+        _verifyParameters(_pollID, _secretHash);
 
         // if msg.sender doesn't have enough voting rights,
         // request for enough voting rights
@@ -169,13 +185,6 @@ contract MileysTCRVoting {
             uint remainder = _numTokens - voteTokenBalance[msg.sender] ;
             requestVotingRights(remainder);
         }
-
-        // make sure msg.sender has enough voting rights
-        require(voteTokenBalance[msg.sender] >= _numTokens);
-        // prevent user from committing to zero node placeholder
-        require(_pollID != 0);
-        // prevent user from committing a secretHash of 0
-        require(_secretHash != 0);
 
         // Check if _prevPollID exists in the user's DLL or if _prevPollID is 0
         require(_prevPollID == 0 || dllMap[msg.sender].contains(_prevPollID));
@@ -199,13 +208,20 @@ contract MileysTCRVoting {
         emit VoteCommitted(_pollID, _numTokens, msg.sender);
     }
 
+    function _verifyParameters(uint256 _pollID, bytes32 _hash) internal view {
+        if (!pollExists(_pollID)) revert PollDoesNotExist();
+        if (!commitPeriodActive(_pollID)) revert CommitPeriodEnded();
+        if (_hash == 0) revert InvalidCommitHash();
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                                 VIEWS
+    //////////////////////////////////////////////////////////////*/
     /// @notice Checks if the commit period is still active for the specified poll
     /// @dev Checks isExpired for the specified poll's commitEndDate
     /// @param _pollID Integer identifier associated with target poll
     /// @return Boolean indication of isCommitPeriodActive for target poll
     function commitPeriodActive(uint _pollID) public view returns (bool) {
-        require(pollExists(_pollID));
-
         return !isExpired(polls[_pollID].commitEndDate);
     }
 
@@ -227,6 +243,9 @@ contract MileysTCRVoting {
         return prevValid && nextValid;
     }
 
+    /*//////////////////////////////////////////////////////////////
+                             REVEALED LOGIC
+    //////////////////////////////////////////////////////////////*/
     /// @notice Reveals vote with choice and secret salt used in generating commitHash to attribute committed tokens
     /// @param _pollID Integer identifier associated with target poll
     /// @param _voteOption Vote choice used to generate commitHash for associated poll
@@ -309,7 +328,6 @@ contract MileysTCRVoting {
         return (100 * poll.votesForChallenger) > (poll.quorum * (poll.votesForChallenger + poll.votesForRequester));
     }
 
-    
     /// @notice Determines if poll is over
     /// @dev Checks isExpired for specified poll's revealEndDate
     /// @return Boolean indication of whether polling period is over
@@ -318,7 +336,6 @@ contract MileysTCRVoting {
 
         return isExpired(polls[_pollID].revealEndDate);
     }
-
     
     /// @dev Checks if an expiration date has been reached
     /// @param _terminationDate Integer timestamp of date to compare current timestamp with
@@ -327,7 +344,6 @@ contract MileysTCRVoting {
         return (block.timestamp > _terminationDate);
     }
 
-    
     /// @dev Checks if a poll exists
     /// @param _pollID The pollID whose existance is to be evaluated.
     /// @return Boolean Indicates whether a poll exists for the provided pollID
@@ -387,7 +403,6 @@ contract MileysTCRVoting {
         return getNumTokens(_voter, getLastNode(_voter));
     }
 
-    
     /// @dev Gets top element of sorted poll-linked-list
     /// @param _voter Address of user to check against
     /// @return Integer identifier to poll with maximum number of tokens committed to it

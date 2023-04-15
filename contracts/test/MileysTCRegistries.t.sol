@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
@@ -214,6 +214,29 @@ contract RegistryTest is Test {
         _mintAndApproveToken(users[2], registry.CHALLENGE_COST());
         vm.prank(users[2]);
         vm.expectRevert(MileysTCRegistries.ItemHasPendingChallenge.selector);
+        registry.challengeItems(itemsIds, challengeDataId);
+    }
+
+    function testChallenge_ShouldRevert_IfItemChallengeExpired() public {
+        _addProposal();
+        _mintAndApproveToken(users[1], registry.ITEM_COST());
+
+        string[] memory itemDataIds = new string[](1);
+        bytes32 proposalId = keccak256(abi.encode("QmZ5Y2JjZmM1"));
+        itemDataIds[0] = "QmZ5Y2JjZmMDZIJ29";
+        _addItems(users[1], proposalId, itemDataIds);
+        
+        bytes32 itemId = keccak256(abi.encodePacked(proposalId, itemDataIds[0]));
+
+        bytes32[] memory itemsIds = new bytes32[](1);
+        string[] memory challengeDataId = new string[](1);
+        itemsIds[0] = itemId;
+        challengeDataId[0] = "QmZ5Y2JjZmdezaiocjezaoij8382";
+
+        _mintAndApproveToken(users[2], registry.CHALLENGE_COST());
+        vm.prank(users[2]);
+        vm.warp(block.timestamp + 31 days);
+        vm.expectRevert(MileysTCRegistries.ItemChallengeExpired.selector);
         registry.challengeItems(itemsIds, challengeDataId);
     }
 }

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
+/// @notice Forked from https://etherscan.io/address/0xdf9c10e2e9bb8968b908261d38860b1a038cc2ef#code#L33
 library DLL {
 
   uint constant NULL_NODE_ID = 0;
