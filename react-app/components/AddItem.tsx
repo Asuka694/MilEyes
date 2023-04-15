@@ -71,7 +71,7 @@ const SectionItem: React.FC = () => {
   };
 
   const inputElements = Object.entries(productItem).map(([key, value]) => {
-    if (key === 'image') return null; // Skip label for 'image' key
+    if (key === 'image') return null;
     return (
       <div key={key}>
         <label htmlFor={key}>{key}: </label>

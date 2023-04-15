@@ -1,21 +1,20 @@
 import { useState, useEffect } from "react";
-import { contractAddressRegistries, contractAddressVoting } from "abis/addresses";
+import { contractAddressRegistries, contractAddressToken } from "abis/addresses";
 import ContractAbiRegistries from "abis/TCRegistries.json";
-import Image from "next/image";
+import ContractAbiERC20 from "abis/MockERC20.json";
 
-import Link from "next/link";
+const dotenv = require("dotenv")
+dotenv.config()
+
+const pinataSDK = require('@pinata/sdk');
 
 import { ethers } from "ethers";
-import { BeatLoader } from "react-spinners";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
-import { getParsedEthersError } from "@enzoferey/ethers-error-parser";
 import { useAccount, useContract, useContractRead, useSigner } from "wagmi";
 
 const SectionProduct: React.FC = () => {
-  const [isContract, setIsContract] = useState<any>();
   const [productItem, setProductItem] = useState<any>([]);
-  const [numberOfItems, setNumberOfItems] = useState<number>(1);
   const [productOwner, setProductOwner] = useState<string>("");
   
   const router = useRouter();
@@ -23,9 +22,19 @@ const SectionProduct: React.FC = () => {
   const { address } = useAccount();
   const { data: signer, isError } = useSigner();
 
+  const [isApproved, setIsApproved] = useState<boolean>(false);
+
+  const [itemHash, setItemHash] = useState<string>("");
+
   const contract = useContract({
     address: contractAddressRegistries,
     abi: ContractAbiRegistries.abi,
+    signerOrProvider: signer,
+  });
+
+  const tokenContract = useContract({
+    address: contractAddressToken,
+    abi: ContractAbiERC20.abi,
     signerOrProvider: signer,
   });
 
@@ -33,6 +42,7 @@ const SectionProduct: React.FC = () => {
     if (!signer) return;
     if (address) {
       getDatas();
+      checkApprove();
     }
   }, [address, signer]);
 
@@ -49,6 +59,83 @@ const SectionProduct: React.FC = () => {
       console.log(e);
     }
   };
+
+  const sendFileToIPFS = async () => {
+    const pinata = new pinataSDK(`${process.env.NEXT_PUBLIC_PINATA_API_KEY}`, `${process.env.NEXT_PUBLIC_PINATA_API_SECRET}`);
+    pinata.testAuthentication().then((result) => {
+      //handle successful authentication here
+      console.log(result);
+      pinata.pinJSONToIPFS(productItem).then((result) => {
+        //handle results here
+        console.log(result);
+        setItemHash(result.IpfsHash);
+      }).catch((err) => {
+          //handle error here
+          console.log(err);
+      });
+    }).catch((err) => {
+        //handle error here
+        console.log(err);
+    });
+}
+
+  const checkApprove = async () => {
+    try {
+      let cost = await contract?.ITEM_COST();
+      cost = ethers.utils.formatEther(cost);
+      let amountApproved = await tokenContract?.allowance(
+        address,
+        contractAddressRegistries
+      );
+      amountApproved = ethers.utils.formatEther(amountApproved);
+      if (amountApproved > cost) {
+        setIsApproved(true);
+      } else {
+        setIsApproved(false);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const approveToken = async () => {
+    try {
+      const cost = await contract?.ITEM_COST();
+      const tx = await tokenContract?.approve(
+        contractAddressRegistries,
+        cost
+      );
+      await tx.wait();
+      setIsApproved(true);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const addItem = async() => {
+    try {
+      sendFileToIPFS();
+      const proposalId = await contract?.proposalsId(id);
+      const tx = await contract?.addItems(proposalId, [itemHash]);
+      await tx.wait();
+      toast.success("Item added to your registry");
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  
+  const handleObjectFieldChange = (fieldName, subFieldName, value) => {
+    const updatedObject = {
+      ...productItem[fieldName],
+      [subFieldName]: value,
+    };
+    setProductItem({
+      ...productItem,
+      [fieldName]: updatedObject,
+    });
+  };
+  
+  
 
   if (!address) {
     return (
@@ -73,64 +160,101 @@ const SectionProduct: React.FC = () => {
             Back
           </button>
         </div>
-      <div className="container mx-auto mt-10 flex flex-col lg:flex-row">
-        <div className="w-full lg:w-1/3 lg:mr-8 px-8 pt-5 md:pt-0 md:px-0 self-start">
-          <img src={productItem.image} className="w-full h-auto lg:max-w-sm" alt={productItem.name} />
-        </div>
-        <div className="w-full lg:w-2/3">
-        <h1 className="text-2xl">Registry creator: </h1> <p>{productOwner}</p>
-          <br/>
-          <h1 className="text-2xl font-bold">{productItem.product_name}</h1>
-          <div className="my-5">
-            {Object.entries(productItem).map(([key, value]) => {
-              if (Array.isArray(value)) {
-                return (
-                  <div key={key}>
-                    <h3 className="font-bold">{key.toUpperCase()}:</h3>
-                    <ul>
-                      {value.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              } else if (typeof value === "object" && value !== null) {
-                return (
-                  <div key={key}>
-                    <h3 className="font-bold">{key.toUpperCase()}:</h3>
-                    <ul>
-                      {Object.entries(value).map(([innerKey, innerValue]) => (
-                        <li key={innerKey}>
-                          {innerKey.charAt(0).toUpperCase() + innerKey.slice(1)}: {innerValue}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              } else {
-                return (
-                  <div key={key}>
-                    <h3 className="font-bold">{key.toUpperCase()}:</h3>
-                    <p>{value}</p>
-                  </div>
-                );
-              }
-            })}
+        <div className="container mx-auto mt-10 flex flex-col lg:flex-row">
+          <div className="w-full lg:w-1/3 lg:mr-8 px-8 pt-5 md:pt-0 md:px-0 self-start">
+            <img src={productItem.image} className="w-full h-auto lg:max-w-sm" alt={productItem.name} />
           </div>
-            <Link href={`/addItem/?product=${product}&id=${id}`}>
+          <div className="w-full lg:w-2/3">
+            <h1 className="text-2xl">Registry creator: </h1> <p>{productOwner}</p>
+            <br/>
+            <h1 className="text-2xl font-bold">{productItem.product_name}</h1>
+            <div className="my-5">
+              {Object.entries(productItem).map(([key, value]) => {
+                if (Array.isArray(value)) {
+                  return (
+                    <div key={key}>
+                      <h3 className="font-bold">{key.toUpperCase()}:</h3>
+                      <ul>
+                        {value.map((item, index) => (
+                          <li key={index}>
+                            {item}
+                            {" "}
+                            <label>
+                            <input
+                              type="text"
+                              value={item}
+                              onChange={(event) => handleListItemChange(key, index, event.target.value)}
+                            />
+
+                            </label>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                } else if (typeof value === "object" && value !== null) {
+                  return (
+                    <div key={key}>
+                      <h3 className="font-bold">{key.toUpperCase()}:</h3>
+                      <ul>
+                        {Object.entries(value).map(([innerKey, innerValue]) => (
+                          <li key={innerKey}>
+                            {innerKey.charAt(0).toUpperCase() + innerKey.slice(1)}: {innerValue}
+                            {" "}
+                            <label>
+                              <input
+                                type="text"
+                                value={productItem[key][innerKey] || ""}
+                                onChange={(event) =>
+                                  handleObjectFieldChange(
+                                    key,
+                                    innerKey,
+                                    event.target.value
+                                  )
+                                }
+                              />
+                            </label>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div key={key}>
+                      <h3 className="font-bold">
+                        {key.toUpperCase()}:
+                      </h3>
+                      <p>
+                        {value} 
+                        {" "}
+                        
+                      </p>
+                    </div>
+                  );
+                }
+              })}
+            </div>
+            {isApproved ? (
               <button
-              className="bg-orange-400 rounded-lg text-white py-2 pl-4 pr-4 text-xl font-bold hover:bg-orange-500 transition duration-300"
+                className="bg-orange-400 rounded-lg text-white py-2 pl-4 pr-4 text-xl font-bold hover:bg-orange-500 transition duration-300"
+                onClick={() => addItem()}
               >
                 Add item
               </button>
-            </Link>
+            ) : (
+              <button
+                className="bg-orange-400 rounded-lg text-white py-2 pl-4 pr-4 text-xl font-bold hover:bg-orange-500 transition duration-300"
+                onClick={() => approveToken()}
+              >
+                Approve
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
-    </div>
   );
-
-  
 };
 
 export default SectionProduct;

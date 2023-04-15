@@ -75,10 +75,6 @@ contract RegistryTest is Test {
         token.mint(users[0], 1 ether);
         token.approve(address(registry), 1 ether);
         registry.propose("QmZ5Y2JjZmM1");
-
-        token.mint(users[0], 1 ether);
-        token.approve(address(registry), 1 ether);
-        registry.propose("QmZ5Y2JjZmM2");
     }
 
     function testAddItems_ShouldRevert_WhenProposalIdDoesNotExist() public {
