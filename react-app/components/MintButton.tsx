@@ -2,11 +2,12 @@ import AvatarABI from "../abis/Avatar";
 import { useContractWrite, usePrepareContractWrite } from "wagmi";
 import { useEffect, useState } from "react";
 import Button from "./Button";
+import { contractAddressNFT } from "abis/addresses";
 
 export default function MintButton() {
 
     const { config } = usePrepareContractWrite({
-        address: "0x0180C107b564bd47cc96EE6ab428A9a2b8A8a363",
+        address: contractAddressNFT,
         abi: AvatarABI.abi,
         functionName: 'createAvatar',
     });

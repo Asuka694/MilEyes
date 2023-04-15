@@ -8,6 +8,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import MintButton from "@/components/MintButton";
 import RadarChart from "@/components/RadarChart";
 import Image from "next/image";
+import { contractAddressNFT } from "abis/addresses";
 
 export default function Avatar() {
     const { isConnected } = useAccount();
@@ -17,8 +18,6 @@ export default function Avatar() {
     const [isWalletConnected, setWalletConnected] = useState(false);
     const [isMinted, setIsMinted] = useState(false);
 
-    const NFT_COLLECTION_ADDRESS = "0x0180C107b564bd47cc96EE6ab428A9a2b8A8a363";
-
     const provider = useProvider();
     const currentAddy = useAccount().address;
 
@@ -26,14 +25,14 @@ export default function Avatar() {
         // Addresses for Celo and Alfajores
         address:
             chain?.id === 42220
-                ? NFT_COLLECTION_ADDRESS
-                : NFT_COLLECTION_ADDRESS,
+                ? contractAddressNFT
+                : contractAddressNFT,
         abi: AvatarABI.abi,
         signerOrProvider: provider,
     });
 
     const { data } = useContractRead({
-            address: NFT_COLLECTION_ADDRESS,
+            address: contractAddressNFT,
             abi: AvatarABI.abi,
             functionName: 'balanceOf',
             args: [currentAddy],

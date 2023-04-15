@@ -1,4 +1,4 @@
-import Button from "@/components/Button";
+/*import Button from "@/components/Button";
 import InputField from "@/pages/registerProduct";
 import Jazzicon from "@/components/Jazzicon";
 import { ResolveMasa } from "@/masa-resolver";
@@ -123,3 +123,4 @@ export default function MasaResolver() {
         </div>
     );
 }
+*/

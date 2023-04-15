@@ -7,6 +7,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import SubmitButton from "@/components/SubmitButton";
 import UploadToIPFS from "@/components/UploadImage";
 import HandleForm from "@/components/HandleForm";
+import { contractAddressNFT } from "abis/addresses";
 
 export default function Storage() {
     const { isConnected } = useAccount();
@@ -21,8 +22,8 @@ export default function Storage() {
         // Addresses for Celo and Alfajores
         address:
             chain?.id === 42220
-                ? "0xbF4A19703bee67a66dFAc3b7a0b478265E0FBCdF"
-                : "0x63556B57a5dDa94cA061D1178715Fe2b8Dc32C46",
+                ? contractAddressNFT
+                : contractAddressNFT,
         abi: StorageABI,
         signerOrProvider: provider,
     });
@@ -35,9 +36,7 @@ export default function Storage() {
         <div className="w-[500px]  m-auto  flex flex-col space-y-2">
             {isWalletConneted ? (
                 <>
-                 
                  <HandleForm />
-
                 </>
             ) : (
                 <div className="flex justify-center">

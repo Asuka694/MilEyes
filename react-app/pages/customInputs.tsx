@@ -1,3 +1,5 @@
+/*
+
 import InputField from "@/pages/registerProduct";
 import Jazzicon from "@/components/Jazzicon";
 import { useEffect, useState } from "react";
@@ -70,3 +72,5 @@ export default function Storage() {
         </div>
     );
 }
+
+*/

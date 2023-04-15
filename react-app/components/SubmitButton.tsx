@@ -1,3 +1,4 @@
+/*
 import StorageABI from "../abis/Storage";
 import { useContractWrite, usePrepareContractWrite } from "wagmi";
 import Button from "./Button";
@@ -41,3 +42,4 @@ export default function StorageButton({
         />
     );
 }
+*/
