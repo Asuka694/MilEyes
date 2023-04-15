@@ -28,3 +28,13 @@
     text-align: right;
     margin-left: '100px';
 }
+
+.dropzone {
+    border: 0.1cm;
+    border-style: dashed;
+}
+
+.submitButton {
+    border: 0.1cm;
+    border-style: solid;
+}

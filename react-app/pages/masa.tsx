@@ -1,5 +1,5 @@
 import Button from "@/components/Button";
-import InputField from "@/components/InputField";
+import InputField from "@/pages/registerProduct";
 import Jazzicon from "@/components/Jazzicon";
 import { ResolveMasa } from "@/masa-resolver";
 import { NameResolutionResults } from "@/types";

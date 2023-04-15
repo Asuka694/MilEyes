@@ -1,4 +1,4 @@
-import InputField from "@/components/InputField";
+import InputField from "@/pages/registerProduct";
 import Jazzicon from "@/components/Jazzicon";
 import { useEffect, useState } from "react";
 import { useAccount, useContract, useProvider, useNetwork, useContractRead } from "wagmi";
@@ -72,6 +72,7 @@ export default function Avatar() {
                     </div>
                     <div className="Profile_div">                    
                         <div className="NFT_div">
+                            <div> Your NFT : </div>
                             <Image
                             className="nftProfile"
                             loader={() => src} 
@@ -82,7 +83,7 @@ export default function Avatar() {
                             />
                         </div>
                         <div className="Stats_div">
-                            <div> *statistiques censé être ici*</div>
+                            <div> Analysis of your consumption : </div>
                             <RadarChart />
                         </div>
                     </div>
