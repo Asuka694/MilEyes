@@ -74,9 +74,9 @@ export default function Header() {
                                         Masa
                                     </a>
                                     <a
-                                        href="/nft"
+                                        href="/registries"
                                         className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
-                                            pathname === "/nft"
+                                            pathname === "/registries"
                                                 ? "border-b-2 border-black"
                                                 : ""
                                         } text-gray-900`}
@@ -143,9 +143,9 @@ export default function Header() {
                             </Disclosure.Button>
                             <Disclosure.Button
                                 as="a"
-                                href="/nft"
+                                href="/registries"
                                 className={`block py-2 pl-3 pr-4 text-base font-medium text-black ${
-                                    pathname === "/nft"
+                                    pathname === "/registries"
                                         ? "border-l-4 border-black"
                                         : ""
                                 }`}
