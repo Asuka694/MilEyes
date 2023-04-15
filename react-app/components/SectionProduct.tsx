@@ -299,17 +299,30 @@ const SectionProduct: React.FC = () => {
                 Approve
               </button>
             )}
-            { numberOfItemsMade > 0 ? (
-            <div className="pt-4">
-            <button
-                className="bg-orange-400 rounded-lg text-white py-2 pl-4 pr-4 text-xl font-bold hover:bg-orange-500 transition duration-300"
-                onClick={() => displayDifferencies()}
-              >
-                Check items requested ({numberOfItemsMade})
-              </button>
-            </div>)
-            : null}
-            
+            {numberOfItemsMade > 0 ? (
+  <div>
+    <div className="pt-4">
+      <button
+        className="bg-orange-400 rounded-lg text-white py-2 pl-4 pr-4 text-xl font-bold hover:bg-orange-500 transition duration-300"
+        onClick={() => displayDifferencies()}
+      >
+        Check items requested ({numberOfItemsMade})
+      </button>
+    </div>
+        {itemsContent.map((item, index) => (
+        <div key={index}>
+            <h3 className="font-bold">Item {index + 1}:</h3>
+            <ul>
+            {Object.entries(item).map(([innerKey, innerValue]) => (
+                <li key={innerKey}>
+                {innerKey.charAt(0).toUpperCase() + innerKey.slice(1)}: {innerValue}
+                </li>
+            ))}
+            </ul>
+        </div>
+        ))}
+        </div>
+    ) : null}
           </div>
         </div>
       </div>
