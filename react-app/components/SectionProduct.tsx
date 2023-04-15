@@ -16,6 +16,12 @@ import { useAccount, useContract, useContractRead, useSigner } from "wagmi";
 const SectionProduct: React.FC = () => {
   const [productItem, setProductItem] = useState<any>([]);
   const [productOwner, setProductOwner] = useState<string>("");
+
+  const [itemsRequested, setItemsRequested] = useState<any[]>([]);
+  const [numberOfItemsMade, setNumberOfItemsMade] = useState<number>(0);
+  const [cidsRequested, setCidsRequested] = useState<string[]>([]);
+
+  const [itemsContent, setItemsContent] = useState<any[]>([]);
   
   const router = useRouter();
   const { product, id } = router.query;
@@ -43,6 +49,7 @@ const SectionProduct: React.FC = () => {
     if (address) {
       getDatas();
       checkApprove();
+      displayDifferencies();
     }
   }, [address, signer]);
 
@@ -53,6 +60,11 @@ const SectionProduct: React.FC = () => {
       const url = "https://cmb.mypinata.cloud/ipfs/" + product;
       const response = await fetch(url);
       const jsonResponse = await response.json();
+
+      const itemsMadeOnProposal = parseInt(await contract?.getItemsLengthFromProposal(productHash));
+
+      console.log("items made on proposal:", itemsMadeOnProposal);
+      setNumberOfItemsMade(itemsMadeOnProposal);
       setProductItem(jsonResponse);
       setProductOwner(productStruct.requester);
     } catch (e) {
@@ -78,6 +90,9 @@ const SectionProduct: React.FC = () => {
         //handle error here
         console.log(err);
     });
+    setTimeout(() => {
+      console.log("item hash:", itemHash);
+    }, 3000);
 }
 
   const checkApprove = async () => {
@@ -113,6 +128,43 @@ const SectionProduct: React.FC = () => {
     }
   };
 
+  const displayDifferencies = async () => {
+    try {
+        const productHash = await contract?.proposalsId(id);
+        const productStruct = await contract?.proposals(productHash);
+        
+  
+        const itemsMadeOnProposal = parseInt(await contract?.getItemsLengthFromProposal(productHash));
+
+        let itemsCIDs = [];
+        let itemsStruct = [];
+        let itemsContent = [];
+
+        for (let i = numberOfItemsMade -1 ; i >= 0; i--) {
+            const itemRequested = await contract?.getItemFromProposal(productHash, i);
+            const itemStruct = await contract?.items(itemRequested);
+            const itemCID = itemStruct.data;
+            console.log("item struct:", itemStruct);
+            console.log("item CID:", itemCID);
+            itemsStruct.push(itemStruct);
+            itemsCIDs.push(itemCID);
+            const url = "https://cmb.mypinata.cloud/ipfs/" + itemCID;
+            const response = await fetch(url);
+            const jsonResponse = await response.json();
+            itemsContent.push(jsonResponse);
+          }
+  
+        console.log("items made on proposal:", itemsMadeOnProposal);
+        setNumberOfItemsMade(itemsMadeOnProposal);
+        setProductOwner(productStruct.requester);
+        setItemsRequested(itemsStruct);
+        setCidsRequested(itemsCIDs);
+        setItemsContent(itemsContent);
+      } catch (e) {
+        console.log(e);
+      }
+  };
+
   const addItem = async() => {
     try {
       await sendFileToIPFS();
@@ -136,8 +188,6 @@ const SectionProduct: React.FC = () => {
       [fieldName]: updatedObject,
     });
   };
-  
-  
 
   if (!address) {
     return (
@@ -185,7 +235,6 @@ const SectionProduct: React.FC = () => {
                             <input
                               type="text"
                               value={item}
-                              onChange={(event) => handleListItemChange(key, index, event.target.value)}
                             />
 
                             </label>
@@ -228,9 +277,7 @@ const SectionProduct: React.FC = () => {
                         {key.toUpperCase()}:
                       </h3>
                       <p>
-                        {value} 
-                        {" "}
-                        
+                        {value}
                       </p>
                     </div>
                   );
@@ -252,6 +299,17 @@ const SectionProduct: React.FC = () => {
                 Approve
               </button>
             )}
+            { numberOfItemsMade > 0 ? (
+            <div className="pt-4">
+            <button
+                className="bg-orange-400 rounded-lg text-white py-2 pl-4 pr-4 text-xl font-bold hover:bg-orange-500 transition duration-300"
+                onClick={() => displayDifferencies()}
+              >
+                Check items requested ({numberOfItemsMade})
+              </button>
+            </div>)
+            : null}
+            
           </div>
         </div>
       </div>
