@@ -1,10 +1,8 @@
 import InputField from "@/pages/registerProduct";
-import Jazzicon from "@/components/Jazzicon";
 import { useEffect, useState } from "react";
 import { useAccount, useContract, useProvider, useNetwork } from "wagmi";
 import StorageABI from "../abis/Storage";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import SubmitButton from "@/components/SubmitButton";
 import UploadToIPFS from "@/components/UploadImage";
 import HandleForm from "@/components/HandleForm";
 import { contractAddressNFT } from "abis/addresses";
