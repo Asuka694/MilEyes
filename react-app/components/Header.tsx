@@ -54,34 +54,14 @@ export default function Header() {
                                         Home
                                     </a>
                                     <a
-                                        href="/storage"
-                                        className={`inline-flex ${
-                                            pathname === "/storage"
-                                                ? "border-b-2 border-black"
-                                                : ""
-                                        } items-center px-1 pt-1 text-sm font-medium text-gray-900`}
-                                    >
-                                        Storage
-                                    </a>
-                                    <a
-                                        href="/masa"
-                                        className={`inline-flex ${
-                                            pathname === "/masa"
-                                                ? "border-b-2 border-black"
-                                                : ""
-                                        } items-center px-1 pt-1 text-sm font-medium text-gray-900`}
-                                    >
-                                        Masa
-                                    </a>
-                                    <a
-                                        href="/nft"
+                                        href="/registries"
                                         className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
-                                            pathname === "/nft"
+                                            pathname === "/registries"
                                                 ? "border-b-2 border-black"
                                                 : ""
                                         } text-gray-900`}
                                     >
-                                        NFT
+                                        Registries
                                     </a>
                                     <a
                                         href="/avatar"
@@ -121,36 +101,14 @@ export default function Header() {
                             </Disclosure.Button>
                             <Disclosure.Button
                                 as="a"
-                                href="/storage"
+                                href="/registries"
                                 className={`block py-2 pl-3 pr-4 text-base font-medium text-black ${
-                                    pathname === "/storage"
+                                    pathname === "/registries"
                                         ? "border-l-4 border-black"
                                         : ""
                                 }`}
                             >
-                                Storage
-                            </Disclosure.Button>
-                            <Disclosure.Button
-                                as="a"
-                                href="/storage"
-                                className={`block py-2 pl-3 pr-4 text-base font-medium text-black ${
-                                    pathname === "/masa"
-                                        ? "border-l-4 border-black"
-                                        : ""
-                                }`}
-                            >
-                                Masa
-                            </Disclosure.Button>
-                            <Disclosure.Button
-                                as="a"
-                                href="/nft"
-                                className={`block py-2 pl-3 pr-4 text-base font-medium text-black ${
-                                    pathname === "/nft"
-                                        ? "border-l-4 border-black"
-                                        : ""
-                                }`}
-                            >
-                                NFT
+                                Registries
                             </Disclosure.Button>
                         </div>
                     </Disclosure.Panel>

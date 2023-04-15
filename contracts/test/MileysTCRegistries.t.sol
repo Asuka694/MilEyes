@@ -70,6 +70,17 @@ contract RegistryTest is Test {
         registry.propose("QmZ5Y2JjZmM1");
     }
 
+    function testProposal_ShouldSucceed2() public {
+        vm.startPrank(users[0]);
+        token.mint(users[0], 1 ether);
+        token.approve(address(registry), 1 ether);
+        registry.propose("QmZ5Y2JjZmM1");
+
+        token.mint(users[0], 1 ether);
+        token.approve(address(registry), 1 ether);
+        registry.propose("QmZ5Y2JjZmM2");
+    }
+
     function testAddItems_ShouldRevert_WhenProposalIdDoesNotExist() public {
         _addProposal();
 
