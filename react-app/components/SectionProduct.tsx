@@ -69,6 +69,7 @@ const SectionProduct: React.FC = () => {
         //handle results here
         console.log(result);
         setItemHash(result.IpfsHash);
+        console.log(itemHash);
       }).catch((err) => {
           //handle error here
           console.log(err);
@@ -114,7 +115,8 @@ const SectionProduct: React.FC = () => {
 
   const addItem = async() => {
     try {
-      sendFileToIPFS();
+      await sendFileToIPFS();
+      console.log("item tx:", itemHash);
       const proposalId = await contract?.proposalsId(id);
       const tx = await contract?.addItems(proposalId, [itemHash]);
       await tx.wait();

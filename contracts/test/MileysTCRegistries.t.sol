@@ -115,6 +115,9 @@ contract RegistryTest is Test {
 
         vm.prank(users[1]);
         registry.addItems(proposalId, dataIds);
+        bytes32 itemId = registry.itemsId(0);
+        string memory dataId;
+        (,,,dataId) = registry.items(itemId);
     }
 
     function testAddItems_ShouldRevert_WhenLengthExceeded() public {
